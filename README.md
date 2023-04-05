@@ -22,7 +22,10 @@ This project framework provides the following features:
    * User statistics
    * Prompt Response
 * High Availability of OpenAI service with region failover.
-* Integration with existing OpenAI libraries- [0.26.5](https://github.com/openai/openai-python/releases/tag/v0.26.5) 
+* Integration with latest OpenAI libraries-
+  *  [OpenAI](https://github.com/openai/openai-python/) 
+  *  [LangChain](https://python.langchain.com/en/latest/)
+  *  [Llama-index](https://gpt-index.readthedocs.io/en/latest/)
 
 ## Getting Started
 

@@ -58,6 +58,8 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
   - [Import instructions](https://learn.microsoft.com/en-us/azure/api-management/import-and-publish#go-to-your-api-management-instance)
 ![img](/assets/apim_config_0.png)
 - <b>For All API Operations</b>:
+  - Set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
+  ![img](assets/update-apim-config.png)
   -  Configure the inbound rule of "set-headers" to add/override the "api-key" header parameter with a value of the API secret key from the OpenAI service.  Instructions for locating your OpenAI keys are here: [Retrieve keys](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?pivots=programming-language-python#retrieve-key-and-endpoint)
   ![img](/assets/apim_config_1.png)
   - Configure the backend service to the endpoint of your deployed OpenAI service with /openai as the path, be sure to override the existing endpoint: 
@@ -76,7 +78,7 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
 
 
 ### Logging OpenAI completions
-- Once the API Management layer has been configured, you can configure existing OpenAI python code to use the API layer by adding a "Header" parameter to the completion request:
+- Once the API Management layer has been configured, you can configure existing OpenAI python code to use the API layer by adding the subscription key parameter to the completion request:
 Example:
 ```python
 import openai
@@ -84,19 +86,15 @@ import openai
 openai.api_type = "azure"
 openai.api_base = "https://xxxxxxxxx.azure-api.net/"
 openai.api_version = "2022-12-01"
-openai.api_key = "placeholder_key" #required placeholder, DO NOT USE ACTUAL SERVICE KEY
+openai.api_key = "APIM SUBSCRIPTION KEY" #DO NOT USE ACTUAL AZURE OPENAI SERVICE KEY
 
-headers = {}
-headers["Content-Type"] = "application/json"
-headers["Ocp-Apim-Subscription-Key"] = '<APIM subscription_key>'
 
 response = openai.Completion.create(engine="modelname",  
                                     prompt="prompt text", temperature=1,  
                                     max_tokens=200,  top_p=0.5,  
                                     frequency_penalty=0,  
                                     presence_penalty=0,  
-                                    stop=None, 
-                                    headers=headers) # Custom header to send to APIM
+                                    stop=None) # Custom header to send to APIM
 
 ```
 

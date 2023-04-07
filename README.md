@@ -4,6 +4,7 @@ Repository detailing the deployment of an Enterprise Azure OpenAI reference arch
 
 ## Key Solution Advantages:
 *	<b>Comprehensive logging of Azure OpenAI model execution tracked to Source IP address.</b>  Log information includes what text users are submitting to the model as well as text being received back from the model.  This ensures models are being used responsibly within the corporate environment and within the approved use cases of the service.
+*	<b>Advanced Usage and Throttling controls</b> allow fine-grained access controls for different user groups without allowing access to underlying service keys.
 *	<b>High availability of the model APIs</b> to ensure user requests are met even if the traffic exceeds the limits of a single Azure OpenAI service.
 *	<b>Secure use of the service</b> by ensuring role-based access managed via Azure Active Directory follows principle of least privilege.
 
@@ -83,8 +84,11 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
 - Test API
   - Test the endpoint by providing the "deployment-id", "api-version" and a sample prompt:
     ![img](/assets/apim_config_4.png)
-  
 
+  
+#### (Optional) Subscription Access Control
+API Management allows API providers to protect their APIs from abuse and create value for different API product tiers. Use of  API Management layer to throttle incoming requests is a key role of Azure API Management. Either by controlling the rate of requests or the total requests/data transferred.
+<br/>Details for configuring APIM Layer : https://learn.microsoft.com/en-us/azure/api-management/api-management-sample-flexible-throttling
 
 ### Logging OpenAI completions
 - Once the API Management layer has been configured, you can configure existing OpenAI python code to use the API layer by adding the subscription key parameter to the completion request:

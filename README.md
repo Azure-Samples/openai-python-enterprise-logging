@@ -8,7 +8,8 @@ Repository detailing the deployment of an Enterprise Azure OpenAI reference arch
 *	<b>High availability of the model APIs</b> to ensure user requests are met even if the traffic exceeds the limits of a single Azure OpenAI service.
 *	<b>Secure use of the service</b> by ensuring role-based access managed via Azure Active Directory follows principle of least privilege.
 
-Video: https://clipchamp.com/watch/WX92A7nDyR4
+Video: 
+![video](assets/video.png)(https://clipchamp.com/watch/WX92A7nDyR4)
 
 ## Reference Architecture
 ![img](/assets/EnterpriseAOAI-Architecture.png)
@@ -63,13 +64,16 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
 
 ### API Management Config
 
-- API Management can be provisioned through Azure Portal :[Provision resource](https://learn.microsoft.com/en-us/azure/api-management/get-started-create-service-instance)
-- Once the API Management service has been provisioned you can import your OpenAI API layer using the OpenAPI specification for the service:
-  - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2022-12-01/inference.json
+- API Management can be provisioned through Azure Portal :[Provision resource](https://learn.microsoft.com/en-us/azure/api-management/get-started-create-service-instance) 
+- Once the API Management service has been provisioned you can import your OpenAI API layer using the OpenAPI specification for the service.
   - [Import instructions](https://learn.microsoft.com/en-us/azure/api-management/import-and-publish#go-to-your-api-management-instance)
-![img](/assets/apim_config_0.png)
+  - Open the APIM - API blade and Select the Import option for an existing API.  
+  ![img](/assets/apim_config_0.0.png)
+  - Select the Update option to update the API to the current OpenAI specifications.
+    - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/preview/2023-03-15-preview/inference.json
+  ![img](/assets/apim_config_0.1.png)
 - <b>For All API Operations</b>:
-  - Set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
+  - In <b>Settings</b> set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
   ![img](assets/apim-config-apikey.png)
   -  Configure the inbound rule of "set-headers" to add/override the "api-key" header parameter with a value of the API secret key from the OpenAI service.  Instructions for locating your OpenAI keys are here: [Retrieve keys](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?pivots=programming-language-python#retrieve-key-and-endpoint)
   ![img](/assets/apim_config_1.png)
@@ -98,8 +102,8 @@ Example:
 import openai
 
 openai.api_type = "azure"
-openai.api_base = "https://xxxxxxxxx.azure-api.net/"
-openai.api_version = "2022-12-01"
+openai.api_base = "https://xxxxxxxxx.azure-api.net/" # APIM Endpoint
+openai.api_version = "2023-03-15-preview"
 openai.api_key = "APIM SUBSCRIPTION KEY" #DO NOT USE ACTUAL AZURE OPENAI SERVICE KEY
 
 
@@ -108,7 +112,7 @@ response = openai.Completion.create(engine="modelname",
                                     max_tokens=200,  top_p=0.5,  
                                     frequency_penalty=0,  
                                     presence_penalty=0,  
-                                    stop=None) # Custom header to send to APIM
+                                    stop=None) 
 
 ```
 

@@ -8,7 +8,10 @@ Repository detailing the deployment of an Enterprise Azure OpenAI reference arch
 *	<b>High availability of the model APIs</b> to ensure user requests are met even if the traffic exceeds the limits of a single Azure OpenAI service.
 *	<b>Secure use of the service</b> by ensuring role-based access managed via Azure Active Directory follows principle of least privilege.
 
-[![video](assets/video.png)](https://clipchamp.com/watch/WX92A7nDyR4 'link')
+
+<div>
+  <video controls src="https://user-images.githubusercontent.com/47987698/232840746-dda0ac0d-6602-41f9-8081-d684976f1fa0.mp4" muted="false"></video>
+</div>
 
 ## Reference Architecture
 ![img](/assets/EnterpriseAOAI-Architecture.png)

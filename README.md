@@ -155,5 +155,5 @@ ApiManagementGatewayLogs
 ![img](/assets/monitor_1.png)
 
 ## Resources
-
+- Azure API Management Policies for Azure OpenAI: https://github.com/mattfeltonma/azure-openai-apim
 

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "japaneast"
+    },
+    "email": {
+      "value": "name@domain.com"
+    },
+    "publisherName": {
+      "value": "name"
+    },
+    "openAiLocation": {
+      "value": "eastus"
+    },
+    "openai_model_deployments": {
+      "value": [
+        {
+          "name": "myChatGptModelDeployment",
+          "model": {
+            "format": "OpenAI",
+            "name": "gpt-35-turbo",
+            "version": "0301"
+          },
+          "scaleSettings": {
+            "scaleType": "Standard"
+          }
+        }
+      ]
+    }
+  }
+}

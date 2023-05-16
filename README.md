@@ -1,6 +1,7 @@
 # Enterprise Azure OpenAI
 
-Repository detailing the deployment of an Enterprise Azure OpenAI reference architecture. 
+Repository detailing the deployment of an Enterprise Azure OpenAI reference architecture.
+<br/>Link: [Azure Architecture Center - Monitor OpenAI Models](https://learn.microsoft.com/en-us/azure/architecture/example-scenario/ai/log-monitor-azure-openai)
 
 ## Key Solution Advantages:
 *	<b>Comprehensive logging of Azure OpenAI model execution tracked to Source IP address.</b>  Log information includes what text users are submitting to the model as well as text being received back from the model.  This ensures models are being used responsibly within the corporate environment and within the approved use cases of the service.

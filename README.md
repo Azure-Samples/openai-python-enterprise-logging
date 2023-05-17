@@ -16,6 +16,18 @@ Repository detailing the deployment of an Enterprise Azure OpenAI reference arch
 ## Reference Architecture
 ![img](/assets/EnterpriseAOAI-Architecture.png)
 
+<table style="border-collapse:collapse">
+  <tr>
+    <td style="border: none;vertical-align: top; font-size:.9em;">1. Client applications can access Azure OpenAI endpoints to perform text generation (completions) and model training (fine-tuning) endpoints to leverage the power of large language models.<br/>
+    <br/>
+    2. Next-Gen Firewall Appliance (Optional) - Provides deep packet level inspection for network traffic to the OpenAI Models.
+    </td>
+    <td style="border: none;vertical-align: top; font-size:.9em;">3. API Management Gateway enables security controls, auditing, and monitoring of the Azure OpenAI models.  Security access is granted via AAD Groups with subscription based access permissions in APIM.  Auditing is enabled via Azure Monitor request logging for all interactions with the models.  Monitoring enables detailed AOAI model usage KPIs/Metrics.</td>
+    <td style="border: none;vertical-align: top; font-size:.9em;">4. API Management Gateway connects to all Azure resources via Private Link to ensure all traffic is secured by private endpoints and contained to private network.<br/><br/>5. Multiple Azure OpenAI instances enable scale out of API usage to ensure high-availability and disaster recovery for the service.</td>
+  </tr>
+
+</table>
+
 ## Features
 
 This project framework provides the following features:
@@ -37,7 +49,7 @@ This project framework provides the following features:
 ### Prerequisites
 - [Azure Subscription](https://azure.microsoft.com/en-us/get-started/)
 - [Azure OpenAI Application](https://aka.ms/oai/access) 
-- 
+  
 ### Installation
 Provisioning artifacts, begin by provisioning the solution artifacts listed below:
 
@@ -46,6 +58,7 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
 -	[Azure Monitor](https://azure.microsoft.com/services/monitor/)
 
 (Optional)
+- Next-Gen Firewall Appliance
 -	[Azure Application Gateway](https://azure.microsoft.com/services/application-gateway/)
 -	[Azure Virtual Network](https://azure.microsoft.com/services/virtual-network/)
 
@@ -72,7 +85,7 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
   - Open the APIM - API blade and Select the Import option for an existing API.  
   ![img](/assets/apim_config_0.0.png)
   - Select the Update option to update the API to the current OpenAI specifications.
-    - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/preview/2023-03-15-preview/inference.json
+    - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2023-05-15/inference.json
   ![img](/assets/apim_config_0.1.png)
 - <b>For All API Operations</b>:
   - In <b>Settings</b> set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
@@ -105,7 +118,7 @@ import openai
 
 openai.api_type = "azure"
 openai.api_base = "https://xxxxxxxxx.azure-api.net/" # APIM Endpoint
-openai.api_version = "2023-03-15-preview"
+openai.api_version = "2023-05-15"
 openai.api_key = "APIM SUBSCRIPTION KEY" #DO NOT USE ACTUAL AZURE OPENAI SERVICE KEY
 
 

@@ -67,7 +67,7 @@
   - [APIM - API] ブレードを開き、既存の API の [ インポート ] オプションを選択します。  
   ![img](/assets/apim_config_0.0.png)
   - [ 更新 ] オプションを選択して、API を現在の OpenAI 仕様に更新します。
-    - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/preview/2023-03-15-preview/inference.json
+    - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2023-05-15/inference.json
   ![img](/assets/apim_config_0.1.png)
 - <b>すべての API 操作のために</b>:
   - <b>設定</b> で、OpenAI ライブラリの仕様と一致するように サブスクリプション - <b>ヘッダー名]</b> を "api-key" に設定します。
@@ -99,7 +99,7 @@ import openai
 
 openai.api_type = "azure"
 openai.api_base = "https://xxxxxxxxx.azure-api.net/" # APIM Endpoint
-openai.api_version = "2023-03-15-preview"
+openai.api_version = "2023-05-15"
 openai.api_key = "APIM SUBSCRIPTION KEY" #DO NOT USE ACTUAL AZURE OPENAI SERVICE KEY
 
 

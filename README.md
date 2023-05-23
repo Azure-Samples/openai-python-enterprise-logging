@@ -87,6 +87,8 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
   - Select the Update option to update the API to the current OpenAI specifications.
     - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2023-05-15/inference.json
   ![img](/assets/apim_config_0.1.png)
+  - (Optional) For Semantic Kernel compatibility "Append" the following Authoring API endpoints:
+    - Authoring OpenAPI - https://raw.githubusercontent.com/Azure/azure-rest-api-specs/c183bb012de8e9e1d0d2e67a0994748df4747d2c/specification/cognitiveservices/data-plane/AzureOpenAI/authoring/stable/2022-12-01/azureopenai.json 
 - <b>For All API Operations</b>:
   - In <b>Settings</b> set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
   ![img](assets/apim-config-apikey.png)

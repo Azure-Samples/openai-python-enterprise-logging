@@ -1,4 +1,10 @@
-# Enterprise Azure OpenAI
+# Enterprise Azure OpenAI with Retry Logic
+
+>**Note**: This repository builds off the [Enterprise Azure OpenAI Repository](https://github.com/Azure-Samples/openai-python-enterprise-logging) and adds in retry logic to handle 429 responses and manage traffic across multiple Azure OpenAI Endpoints.
+
+>**ASSUMPTIONS FOR USAGE:** There are a few assumptions required to utilize this set-up and incorporate the retry logic as supplied. The first is that all models are deployed using the *model name* as the *deployment name*. For instance, the GPT-35-Turbo or ChatGPT model is deployed as "gpt-35-turbo", and not as "chat" or another customized name, across all your Azure OpenAI Resources. Second, the supplied XML and retry logic therein only attempts to handle for 429 responses from underlying Azure OpenAI API endpoints. The code as supplied covers 6 endpoints in East US and South Central regions but the logic can easily be expanded to use more regions and endpoints or fewer.
+
+[Location of XML Policy Script](./assets/apim_aoai_retry_06062023.xml)
 
 Repository detailing the deployment of an Enterprise Azure OpenAI reference architecture.
 <br/>Link: [Azure Architecture Center - Monitor OpenAI Models](https://learn.microsoft.com/en-us/azure/architecture/example-scenario/ai/log-monitor-azure-openai)
@@ -7,7 +13,9 @@ Repository detailing the deployment of an Enterprise Azure OpenAI reference arch
 *	<b>Comprehensive logging of Azure OpenAI model execution tracked to Source IP address.</b>  Log information includes what text users are submitting to the model as well as text being received back from the model.  This ensures models are being used responsibly within the corporate environment and within the approved use cases of the service.
 *	<b>Advanced Usage and Throttling controls</b> allow fine-grained access controls for different user groups without allowing access to underlying service keys.
 *	<b>High availability of the model APIs</b> to ensure user requests are met even if the traffic exceeds the limits of a single Azure OpenAI service.
+      * <b>Retry logic to handle 429 responses</b> and create a reliable user experience.
 *	<b>Secure use of the service</b> by ensuring role-based access managed via Azure Active Directory follows principle of least privilege.
+
 
 <div>
   <video controls src="https://user-images.githubusercontent.com/47987698/232847412-e0f5cdd1-a587-457f-9365-e3caa21c8ec9.mp4" muted="false"></video>
@@ -92,16 +100,74 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
 - <b>For All API Operations</b>:
   - In <b>Settings</b> set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
   ![img](assets/apim-config-apikey.png)
-  -  Configure the inbound rule of "set-headers" to add/override the "api-key" header parameter with a value of the API secret key from the OpenAI service.  Instructions for locating your OpenAI keys are here: [Retrieve keys](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?pivots=programming-language-python#retrieve-key-and-endpoint)
-  ![img](/assets/apim_config_1.png)
-  - Configure the backend service to the endpoint of your deployed OpenAI service with /openai as the path, be sure to override the existing endpoint: 
-    - Example: <b>https://< yourservicename >.openai.azure.com<i>/openai</i></b>
-    - [Retrieve endpoint](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?pivots=programming-language-python#retrieve-key-and-endpoint)
-  ![img](/assets/apim_config_2.png)
   - Configure the Diagnostic Logs settings:
     - Set the sampling rate to 100%
     - Set the "Number of payload bytes to log" as the maximum.
   ![img](/assets/apim_config_3.png)
+- In the **left-hand blade menu** under the **APIs** heading, locate the **Named values** menu and add your endpoints and keys:
+<div style="text-align: center;">
+    <img src="./assets/apim_config_namedvalues.png" alt="img" width="1000" height="791" />
+</div>
+
+  - Ensure that you add **"/openai"** to the end of each Azure OpenAI Endpoint as below:
+  
+  ![img](/assets/apim_config_namedvalues2.png)
+
+  - You may add the keys as either secrets in API-M or with a Key Vault.
+
+> **NOTE:** To utilize the included XML script as-is, you will need to create named-value pairs for all the end-points and secrets (6 in total in the example). Note that the endpoints are named "aoai-eastus-1" and matched with "aoai-eastus-1-key" etc. These create the variables that we are then able to call in-line in our retry policy logic. These can be named in any manner or pattern desired as long as those same named pairs are properly replaced in the retry block.
+
+- Next we will need to define the policies for our API operations.
+    
+    - Navigate to the **APIs** Blade on the left-hand side:
+      ![img](/assets/apim_config_apis.png)
+    
+    - Then navigate into your **API**, make sure you're in **All operations** and select any of the "**</>**" icons:
+      ![img](/assets/apim_config_policy_set.png)
+    
+    - Copy-paste in the code within this [API-M XML Script](./assets/apim_aoai_retry_06062023.xml) assuming you named 6 endpoints as shown above. Otherwise, you will need to edit the script to utilize the **Named values** you supplied in the step above.
+      > **Note:** This Azure API Management Service policy block is an XML code that defines a set of policies to be applied to incoming and outgoing API requests. The primary function of this policy block is to handle inbound requests, route them to different backend services based on a generated random number, and manage the retry mechanism in case of rate-limiting (HTTP 429 status code) responses from the backend services.
+
+    - Click **Save** - if you have correctly supplied the endpoint and key variable names it will save and you can test. 
+
+**IMPORANT NOTES REGARDING THE XML SCRIPT:** 
+
+---  
+
+  The retry policy in the provided XML is used to automatically retry the request to the backend service under certain conditions. 
+  In this specific case, the policy is set to retry the request when the following conditions are met:
+  The response status code is 429 (Too Many Requests): 
+  This usually indicates that the client has sent too many requests in a given amount of time, and the server is rate-limiting the requests.
+
+  count: This attribute specifies the maximum number of retries that the policy will attempt if the specified condition is met. 
+  For example, if count="5", the policy will retry up to 5 times.
+
+  interval: This attribute specifies the time interval (in seconds) between each retry attempt. 
+  If interval="1", there will be a 1-second delay between retries.
+
+  first-fast-retry: This attribute, when set to true, allows the first retry attempt to happen immediately, without waiting for 
+  the specified interval. If set to false, all retry attempts will wait for the interval duration before being executed.
+
+  When the retry policy is triggered, it will execute the logic inside the <choose> block to modify the backend service URL and API key based 
+  on the value of the urlId variable. This effectively changes the backend service to which the request will be retried, 
+  in case the initial backend service returns a 429 status code.
+
+  This will likely get improved / updated but hey, it works. May the 4th be with you.
+
+  05/5/23 Previous attempt borked after 3 retries... now with moar retries:
+  Back-end service now gets incremented by 1 after each sub-sequent retry. 
+  Count is set to 45 and interval is at 4 seconds, this is for the GPT-4 model which has an RPM=18.
+  So with these settings, the first retry should happen immediately and in a new region, with each subsequent retry
+  cycling between regions with a 4 second interval between them. The 45 retries means this should take roughly 3 minutes before it
+  finally quits retrying, but no individual resource should be hit more than 15 times in a single minute.
+  There are different blocks for the different "sets" of models. One for the GPT-4 models, another for text-davinci-002 or text-davinci-003, and a third for all models that do not match those names. These blocks can be reconfigured to group models and endpoints as desired.
+
+  **PLEASE NOTE THAT WHEN YOU CHANGE THE NUMBER OF ENDPOINTS BEING USED FROM 6 !!!**
+
+  You  need to edit line 29 to choose a random number with 1 inclusive, top-level exclusive i.e. Next(1, 7) chooses 1, 2, 3, 4, 5, or 6. So if you want to use 9 endpoints that would be Next(1, 10) etc.
+  You must then also adjust each point where the ("urlId") % 6 + 1) logic is used e.g. if we have 9 endpoints that would be ("urlId") % 9 + 1). You will get 500 errors otherwise as it will try to set a new urldId variable to a potentially non-existent endpoint number or fail to use all available endpoints.
+
+---
 
 - Test API
   - Test the endpoint by providing the "deployment-id", "api-version" and a sample prompt:

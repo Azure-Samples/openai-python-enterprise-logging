@@ -144,7 +144,8 @@ response = openai.Completion.create(engine="modelname",
 - Example query to identify token usage by ip and model:
 ```kusto
 ApiManagementGatewayLogs
-| where OperationId == 'completions_create'
+| where tolower(OperationId) in ('completions_create','chatcompletions_create')
+| where ResponseCode  == '200'
 | extend modelkey = substring(parse_json(BackendResponseBody)['model'], 0, indexof(parse_json(BackendResponseBody)['model'], '-', 0, -1, 2))
 | extend model = tostring(parse_json(BackendResponseBody)['model'])
 | extend prompttokens = parse_json(parse_json(BackendResponseBody)['usage'])['prompt_tokens']
@@ -163,7 +164,8 @@ ApiManagementGatewayLogs
 - Example query to monitor prompt completions: 
 ```kusto
 ApiManagementGatewayLogs
-| where OperationId == 'completions_create'
+| where tolower(OperationId) in ('completions_create','chatcompletions_create')
+| where ResponseCode  == '200'
 | extend model = tostring(parse_json(BackendResponseBody)['model'])
 | extend prompttokens = parse_json(parse_json(BackendResponseBody)['usage'])['prompt_tokens']
 | extend prompttext = substring(parse_json(parse_json(BackendResponseBody)['choices'])[0], 0, 100)

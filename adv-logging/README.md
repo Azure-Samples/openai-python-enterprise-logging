@@ -5,7 +5,7 @@ Repository detailing an advanced logging pattern for the Azure OpenAI Service.
 ## Key Solution Advantages:
 *	<b>Supports models with larger token sizes</b> The advanced logging pattern supports [capturing an event up to 200KB](https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-log-event-hubs?tabs=PowerShell) while the [basic logging pattern](../README.md) supports a [maximum size of 8,192 bytes](https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-app-insights). This allows the pattern to support capturing prompts and responses from models that support [larger token sizes such as GPT4](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/models#gpt-4-models-1).
 
-*	<b>Enforce strong identity controls</b> Authentication to the Azure OpenAI Service resource is restricted to Azure Active Directory identities such as service principals and managed identities. This is accomplished through the usage of an [Azure API Management custom policy](https://learn.microsoft.com/en-us/azure/api-management/validate-jwt-policy).
+*	<b>Enforce strong identity controls and audit logging</b> Authentication to the Azure OpenAI Service resource is restricted to Azure Active Directory identities such as service principals and managed identities. This is accomplished through the usage of an [Azure API Management custom policy](https://learn.microsoft.com/en-us/azure/api-management/validate-jwt-policy). The identity of the application making the request is captured in the logs streamed to the Azure Event Hub.
 
 *	<b>Log the information important to you</b> [Azure API Management custom policies](https://learn.microsoft.com/en-us/azure/api-management/log-to-eventhub-policy) can be used to filter the information captured in the event to what is important to your organization. This can include prompts and responses, the number of tokens used, the Azure Active Directory identity making the call, or the model response time. This information can be used for both compliance and chargeback purposes.
 
@@ -109,7 +109,6 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
 2. You can assign the role using the [Azure Portal using these instructions](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal).
 
 3. Wait at least 15 minutes for the role to propagate throughout Azure. If you do not wait at least 15 minutes, you may encounter an error when creating the API Management Logger.
-
 
 ### **Add the User-Assigned Managed Identity to the Azure API Management Resource**
 

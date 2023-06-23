@@ -1,0 +1,81 @@
+<!--
+    This sample policy enforces Azure AD authentication and authorization to the Azure OpenAI Service. 
+    It limits the authorization tokens issued by the organization's tenant for Cognitive Services.
+    The authorization token is passed on to the Azure OpenAI Service ensuring authorization to the actions within
+    the service are limited to the permissions defined in Azure RBAC.
+
+    The sample policy also logs audit information such as the application id making the call, the prompt, the response, 
+    the model used, and the number of tokens consumed. This can be helpful when handling chargebacks. The events are delivered
+    to an Azure Event Hub through the Azure API Management Logger.
+
+    You must provide values for the AZURE_OAI_SERVICE_NAME, TENANT_ID, YOUR_LOGGER variables.
+    You can use separate APIM Loggers for compliance and chargeback or the same logger. It is your choice.
+
+    Authored by Matthew Felton 6/2023 - https://www.linkedin.com/in/matthewfeltonma/
+-->
+<policies>
+    <inbound>
+        <base />
+            <validate-jwt header-name="Authorization" failed-validation-httpcode="403" failed-validation-error-message="Forbidden">
+                <openid-config url="https://login.microsoftonline.com/{{TENANT_ID}}/v2.0/.well-known/openid-configuration" />
+                <issuers>
+                    <issuer>https://sts.windows.net/{{TENANT_ID}}/</issuer>
+                </issuers>
+                <required-claims>
+                    <claim name="aud">
+                        <value>https://cognitiveservices.azure.com</value>
+                    </claim>
+                </required-claims>
+            </validate-jwt>
+            <set-variable name="message-id" value="@(Guid.NewGuid())" />
+            <log-to-eventhub logger-id="{{YOUR_LOGGER}}" partition-id="0">@{
+
+                var requestBody = context.Request.Body?.As<JObject>(true);
+
+                string prompt = requestBody["prompt"]?.ToString();
+                string messages = requestBody["messages"]?.ToString();
+
+                return new JObject(
+                    new JProperty("event-time", DateTime.UtcNow.ToString()),
+                    new JProperty("backend", context.Request.Url.Host.ToString()),
+                    new JProperty("message-id", context.Variables["message-id"]),
+                    new JProperty("appid", context.Request.Headers.GetValueOrDefault("Authorization",string.Empty).Split(' ').Last().AsJwt().Claims.GetValueOrDefault("appid", string.Empty)),
+                    new JProperty("operationname", context.Operation.Id),
+                    new JProperty("prompt", prompt),
+                    new JProperty("messages", messages)
+                ).ToString();
+
+            }</log-to-eventhub>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+            <log-to-eventhub logger-id="{{YOUR_LOGGER}}" partition-id="0">@{
+
+                var responseBody = context.Response.Body?.As<JObject>(true);
+
+                string response = responseBody["choices"]?.ToString();
+
+                return new JObject(
+                    new JProperty("event-time", DateTime.UtcNow.ToString()),
+                    new JProperty("backend", context.Request.Url.Host.ToString()),
+                    new JProperty("message-id", context.Variables["message-id"]),
+                    new JProperty("appid", context.Request.Headers.GetValueOrDefault("Authorization",string.Empty).Split(' ').Last().AsJwt().Claims.GetValueOrDefault("appid", string.Empty)),
+                    new JProperty("choices",response),
+                    new JProperty("operation", responseBody["object"].ToString()),
+                    new JProperty("model", responseBody["model"].ToString()),
+                    new JProperty("modeltime", context.Response.Headers.GetValueOrDefault("Openai-Processing-Ms",string.Empty)),
+                    new JProperty("completion_tokens", responseBody["usage"]["completion_tokens"].ToString()),
+                    new JProperty("prompt_tokens", responseBody["usage"]["prompt_tokens"].ToString()),
+                    new JProperty("total_tokens", responseBody["usage"]["total_tokens"].ToString())
+                ).ToString();
+            
+            }</log-to-eventhub>
+        
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

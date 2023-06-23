@@ -89,7 +89,7 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
   - Select the Update option to update the API to the current OpenAI specifications.
     - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2023-05-15/inference.json
   ![img](/assets/apim_config_0.1.png)
-  - (Optional) For Semantic Kernel compatibility "Append" the following Authoring API endpoints:
+  - (Optional) For Semantic Kernel compatibility "Update" the following Authoring API endpoints:
     - Authoring OpenAPI - https://raw.githubusercontent.com/Azure/azure-rest-api-specs/c183bb012de8e9e1d0d2e67a0994748df4747d2c/specification/cognitiveservices/data-plane/AzureOpenAI/authoring/stable/2022-12-01/azureopenai.json 
 - <b>For All API Operations</b>:
   - In <b>Settings</b> set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
@@ -177,3 +177,17 @@ ApiManagementGatewayLogs
 ## Resources
 - Azure API Management Policies for Azure OpenAI: https://github.com/mattfeltonma/azure-openai-apim
 
+## Frequently Asked Questions
+- Where is the "Deploy to Azure" button?
+  - In our experience, most enterprise cloud administrators first need to understand the solution before deploying it into an enterprise environment.  The steps in this repo show how each component is deployed and configured so that they can be integrated into your existing deployment scripts.  We do have [bicep templates](deploy) available to accelerate your development once you are familiar with the architecture.
+- Does the solution work with Private Endpoints?
+  - Yes, to configure the solution to work with private endpoints you will need to:
+    - Configure your OpenAI instance to use a [private endpoint](https://learn.microsoft.com/en-us/azure/cognitive-services/cognitive-services-virtual-networks?tabs=portal#use-private-endpoints).
+    - Ensure API Management can resolve the private endpoint, if they are in different virtual networks this may require [vnet link](https://learn.microsoft.com/en-us/azure/dns/private-dns-virtual-network-links)
+    - Configure API Management to use [internal networking](https://learn.microsoft.com/en-us/azure/api-management/api-management-using-with-internal-vnet?tabs=stv2#enable-vnet-connection)
+    - Ensure that API Management endpoints are accessible by your client [link](https://learn.microsoft.com/en-us/azure/api-management/private-endpoint)
+- How do I secure my Azure OpenAI endpoints once this solution is deployed?
+  - Option 1: Rotate all OpenAI Service keys once API Management is configured.
+    ![img](/assets/apim_regen_keys.png)
+  - Option 2: Disable key based access to Azure OpenAI Instance
+    - Will impact Azure OpenAI Studio tool

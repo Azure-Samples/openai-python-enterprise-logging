@@ -95,6 +95,7 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
   - In <b>Settings</b> set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
   ![img](assets/apim-config-apikey.png)
   -  Configure the inbound rule of "set-headers" to add/override the "api-key" header parameter with a value of the API secret key from the OpenAI service.  Instructions for locating your OpenAI keys are here: [Retrieve keys](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?pivots=programming-language-python#retrieve-key-and-endpoint)
+    -  To secure the "api-key" with Azure Key Vault use the steps outlined here: [Securing APIM Keys](https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-properties?tabs=azure-portal)
   ![img](/assets/apim_config_1.png)
   - Configure the backend service to the endpoint of your deployed OpenAI service with /openai as the path, be sure to override the existing endpoint: 
     - Example: <b>https://< yourservicename >.openai.azure.com<i>/openai</i></b>

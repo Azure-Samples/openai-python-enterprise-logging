@@ -78,29 +78,42 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
 
 - After the model has been deployed, go to the OpenAI studio to test your newly created model with the studio playground: [oai.azure.com/portal](oai.azure.com/portal)
 
+- Note down Key1 from the Azure OpenAI instance by opening the Azure OpenAI instance, then from the Resource Management section of the left menu, select Keys and Endpoints.
+
+### Azure Key Vault
+Provision an Azure Key Vault Resource: [Deploy Key Vault](https://portal.azure.com/#create/Microsoft.KeyVault)
+
+Once deployed, add Key1 from the Azure OpenAI instance as a secret: [Add a Secret](https://learn.microsoft.com/en-us/azure/key-vault/secrets/quick-create-portal)
 
 ### API Management Config
 
 - API Management can be provisioned through Azure Portal :[Provision resource](https://learn.microsoft.com/en-us/azure/api-management/get-started-create-service-instance) 
-- Once the API Management service has been provisioned you can import your OpenAI API layer using the OpenAPI specification for the service.
-  - [Import instructions](https://learn.microsoft.com/en-us/azure/api-management/import-and-publish#go-to-your-api-management-instance)
+- Once the API Management service has been provisioned, follow this documentation to configure access permissions for the APIM instance on the Azure Key Vaults secrets.
+
+  - <b>Named Value Setup</b>
+    - Follow this documentation to create a named value linked to Key1 in the Azure Key Vault created earlier: [Add a plain or secret value to API Management](https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-properties?tabs=azure-portal#add-a-plain-or-secret-value-to-api-management)
+    
+  - <b>Backend Setup</b>
+  - From the left menu in API Management select Backends, then create a new backend.
+    - Configure the backend service to the endpoint of your deployed OpenAI service with /openai as the path: 
+    - Example: <b>https://< yourservicename >.openai.azure.com<i>/openai</i></b>
+      - [Retrieve endpoint](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?pivots=programming-language-python#retrieve-key-and-endpoint)
+    ![image](https://github.com/SOE-YoungS/openai-python-enterprise-logging/assets/95053834/00dca41d-cd4b-42dc-a296-a20517f83348)
+
+  - Under Authorization for the backend, set a new header named "api-key" and set its value to the created named value, then save the config.
+    ![image](https://github.com/SOE-YoungS/openai-python-enterprise-logging/assets/95053834/b8b4c267-792d-4769-a162-e0f3d77dfa40)
+    
+  - [API Import instructions](https://learn.microsoft.com/en-us/azure/api-management/import-and-publish#go-to-your-api-management-instance)
   - Open the APIM - API blade and Select the Import option for an existing API.  
   ![img](/assets/apim_config_0.0.png)
   - Select the Update option to update the API to the current OpenAI specifications.
     - Completions OpenAPI -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2023-05-15/inference.json
   ![img](/assets/apim_config_0.1.png)
   - (Optional) For Semantic Kernel compatibility "Update" the following Authoring API endpoints:
-    - Authoring OpenAPI - https://raw.githubusercontent.com/Azure/azure-rest-api-specs/c183bb012de8e9e1d0d2e67a0994748df4747d2c/specification/cognitiveservices/data-plane/AzureOpenAI/authoring/stable/2022-12-01/azureopenai.json 
+    - Authoring OpenAPI - https://raw.githubusercontent.com/Azure/azure-rest-api-specs/c183bb012de8e9e1d0d2e67a0994748df4747d2c/specification/cognitiveservices/data-plane/AzureOpenAI/authoring/stable/2022-12-01/azureopenai.json
 - <b>For All API Operations</b>:
-  - In <b>Settings</b> set the Subscription - <b>header name</b> to "api-key" to match OpenAI library specifications.
-  ![img](assets/apim-config-apikey.png)
-  -  Configure the inbound rule of "set-headers" to add/override the "api-key" header parameter with a value of the API secret key from the OpenAI service.  Instructions for locating your OpenAI keys are here: [Retrieve keys](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?pivots=programming-language-python#retrieve-key-and-endpoint)
-    -  To secure the "api-key" with Azure Key Vault use the steps outlined here: [Securing APIM Keys](https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-properties?tabs=azure-portal)
-  ![img](/assets/apim_config_1.png)
-  - Configure the backend service to the endpoint of your deployed OpenAI service with /openai as the path, be sure to override the existing endpoint: 
-    - Example: <b>https://< yourservicename >.openai.azure.com<i>/openai</i></b>
-    - [Retrieve endpoint](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?pivots=programming-language-python#retrieve-key-and-endpoint)
-  ![img](/assets/apim_config_2.png)
+  - Build your API inbound policy as below.
+  ![image](https://github.com/SOE-YoungS/openai-python-enterprise-logging/assets/95053834/6f76ba77-c148-46c1-ab71-e800f992e984)
   - Configure the Diagnostic Logs settings:
     - Set the sampling rate to 100%
     - Set the "Number of payload bytes to log" as the maximum.
@@ -113,7 +126,12 @@ Provisioning artifacts, begin by provisioning the solution artifacts listed belo
   
 #### (Optional) Subscription Access Control
 API Management allows API providers to protect their APIs from abuse and create value for different API product tiers. Use of  API Management layer to throttle incoming requests is a key role of Azure API Management. Either by controlling the rate of requests or the total requests/data transferred.
-<br/>Details for configuring APIM Layer : https://learn.microsoft.com/en-us/azure/api-management/api-management-sample-flexible-throttling
+- Details for configuring APIM Layer : https://learn.microsoft.com/en-us/azure/api-management/api-management-sample-flexible-throttling
+
+- Details for enabling Subscription based access to API's: [API Management Subscriptions](https://learn.microsoft.com/en-us/azure/api-management/api-management-subscriptions)
+  - Note: To enable API usage via existing libraries, such as Semantic Kernel etc... you can also adjust the "Subscription" settings for the API to the following,
+    <br/>![image](https://github.com/SOE-YoungS/openai-python-enterprise-logging/assets/95053834/97a30a2d-bb71-456c-ba8c-f376c5c255fa)
+    <br/>In the calling client (using the library), you then set the "OpenAI / Azure OpenAI" URL & Key to the values for your API base URL / APIM subscription key.
 
 ### Logging OpenAI completions
 - Once the API Management layer has been configured, you can configure existing OpenAI python code to use the API layer by adding the subscription key parameter to the completion request:
@@ -188,7 +206,6 @@ ApiManagementGatewayLogs
     - Configure API Management to use [internal networking](https://learn.microsoft.com/en-us/azure/api-management/api-management-using-with-internal-vnet?tabs=stv2#enable-vnet-connection)
     - Ensure that API Management endpoints are accessible by your client [link](https://learn.microsoft.com/en-us/azure/api-management/private-endpoint)
 - How do I secure my Azure OpenAI endpoints once this solution is deployed?
-  - Option 1: Rotate all OpenAI Service keys once API Management is configured.
-    ![img](/assets/apim_regen_keys.png)
+  - Option 1: Rotate all OpenAI Service keys once API Management is configured. <br>![image](https://github.com/SOE-YoungS/openai-python-enterprise-logging/assets/95053834/ea6fd8b6-3dff-461e-9bd6-ba267e2e2430)
   - Option 2: Disable key based access to Azure OpenAI Instance
     - Will impact Azure OpenAI Studio tool

@@ -32,19 +32,44 @@
 
                 var requestBody = context.Request.Body?.As<JObject>(true);
 
-                string prompt = requestBody["prompt"]?.ToString();
-                string messages = requestBody["messages"]?.ToString();
+                string prompt = string.Empty;
+                string messages = string.Empty;
+                string model = string.Empty;
+                if(requestBody != null)
+                {
+                    prompt = requestBody["prompt"]?.ToString();
+                    messages = requestBody["messages"]?.ToString();
+                    model = requestBody["model"]?.ToString();
+                }
+                
+                string operation = context.Operation.Id;
+                string result = string.Empty;
 
-                return new JObject(
-                    new JProperty("event-time", DateTime.UtcNow.ToString()),
-                    new JProperty("backend", context.Request.Url.Host.ToString()),
-                    new JProperty("message-id", context.Variables["message-id"]),
-                    new JProperty("appid", context.Request.Headers.GetValueOrDefault("Authorization",string.Empty).Split(' ').Last().AsJwt().Claims.GetValueOrDefault("appid", string.Empty)),
-                    new JProperty("operationname", context.Operation.Id),
-                    new JProperty("prompt", prompt),
-                    new JProperty("messages", messages)
-                ).ToString();
-
+                switch(operation)
+                {
+                    case "get-a-generated-image-result":
+                        result = new JObject(
+                            new JProperty("event-type", "Request"),
+                            new JProperty("event-time", DateTime.UtcNow.ToString()),
+                            new JProperty("backend", context.Request.Url.Host.ToString()),
+                            new JProperty("message-id", context.Variables["message-id"]),
+                            new JProperty("operation", operation)
+                        ).ToString();
+                        break;
+                    default:
+                        result = new JObject(
+                            new JProperty("event-type", "Request"),
+                            new JProperty("event-time", DateTime.UtcNow.ToString()),
+                            new JProperty("backend", context.Request.Url.Host.ToString()),
+                            new JProperty("message-id", context.Variables["message-id"]),
+                            new JProperty("operation", operation),
+                            new JProperty("model", model),
+                            new JProperty("prompt", prompt),
+                            new JProperty("messages", messages)
+                        ).ToString();
+                        break;
+                }
+                return result;
             }</log-to-eventhub>
     </inbound>
     <backend>
@@ -55,22 +80,62 @@
             <log-to-eventhub logger-id="{{YOUR_LOGGER}}" partition-id="0">@{
 
                 var responseBody = context.Response.Body?.As<JObject>(true);
-
+				var operation = context.Operation.Id;
                 string response = responseBody["choices"]?.ToString();
+				
+                string result = string.Empty;
 
-                return new JObject(
-                    new JProperty("event-time", DateTime.UtcNow.ToString()),
-                    new JProperty("backend", context.Request.Url.Host.ToString()),
-                    new JProperty("message-id", context.Variables["message-id"]),
-                    new JProperty("appid", context.Request.Headers.GetValueOrDefault("Authorization",string.Empty).Split(' ').Last().AsJwt().Claims.GetValueOrDefault("appid", string.Empty)),
-                    new JProperty("choices",response),
-                    new JProperty("operation", responseBody["object"].ToString()),
-                    new JProperty("model", responseBody["model"].ToString()),
-                    new JProperty("modeltime", context.Response.Headers.GetValueOrDefault("Openai-Processing-Ms",string.Empty)),
-                    new JProperty("completion_tokens", responseBody["usage"]["completion_tokens"].ToString()),
-                    new JProperty("prompt_tokens", responseBody["usage"]["prompt_tokens"].ToString()),
-                    new JProperty("total_tokens", responseBody["usage"]["total_tokens"].ToString())
-                ).ToString();
+		switch(operation)
+		{
+			case "ChatCompletions_Create":
+			case "Completions_Create":	
+			    result = new JObject(
+                            	new JProperty("event-type", "Response"),
+				new JProperty("event-time", DateTime.UtcNow.ToString()),
+				new JProperty("backend", context.Request.Url.Host.ToString()),
+				new JProperty("message-id", context.Variables["message-id"]),
+				new JProperty("choices",response),
+				new JProperty("operation", operation),
+                        	new JProperty("apiId", context.Api.Id),
+                            	new JProperty("productId", context.Product.Id),
+				new JProperty("model", responseBody["model"].ToString()),
+				new JProperty("modeltime", context.Response.Headers.GetValueOrDefault("Openai-Processing-Ms",string.Empty)),
+				new JProperty("completion_tokens", responseBody["usage"]["completion_tokens"].ToString()),
+				new JProperty("prompt_tokens", responseBody["usage"]["prompt_tokens"].ToString()),
+				new JProperty("total_tokens", responseBody["usage"]["total_tokens"].ToString())
+			).ToString();
+			break;
+					
+			case "embeddings_create":
+			    result = new JObject(
+                                new JProperty("event-type", "Response"),
+				new JProperty("event-time", DateTime.UtcNow.ToString()),
+				new JProperty("backend", context.Request.Url.Host.ToString()),
+				new JProperty("message-id", context.Variables["message-id"]),
+				new JProperty("operation", operation),
+                            	new JProperty("apiId", context.Api.Id),
+                            	new JProperty("productId", context.Product.Id),
+				new JProperty("model", responseBody["model"].ToString()),
+				new JProperty("modeltime", context.Response.Headers.GetValueOrDefault("Openai-Processing-Ms",string.Empty)),
+				new JProperty("prompt_tokens", responseBody["usage"]["prompt_tokens"].ToString()),
+				new JProperty("total_tokens", responseBody["usage"]["total_tokens"].ToString())
+			).ToString();
+			break;
+                    
+                    	default:
+                            result = new JObject(
+                                new JProperty("event-type", "Response"),
+			        new JProperty("event-time", DateTime.UtcNow.ToString()),
+			        new JProperty("backend", context.Request.Url.Host.ToString()),
+				new JProperty("message-id", context.Variables["message-id"]),
+				new JProperty("operation", operation),
+                            	new JProperty("apiId", context.Api.Id),
+                            	new JProperty("productId", context.Product.Id),
+				new JProperty("modeltime", context.Response.Headers.GetValueOrDefault("Openai-Processing-Ms",string.Empty))
+			).ToString();
+			break;
+		}
+                return result;
             
             }</log-to-eventhub>
         

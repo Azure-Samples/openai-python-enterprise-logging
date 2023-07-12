@@ -90,14 +90,14 @@
 					case "ChatCompletions_Create":
 					case "Completions_Create":	
 						result = new JObject(
-                            new JProperty("event-type", "Response"),
+                            				new JProperty("event-type", "Response"),
 							new JProperty("event-time", DateTime.UtcNow.ToString()),
 							new JProperty("backend", context.Request.Url.Host.ToString()),
 							new JProperty("message-id", context.Variables["message-id"]),
 							new JProperty("choices",response),
 							new JProperty("operation", operation),
-                            new JProperty("apiId", context.Api.Id),
-                            new JProperty("productId", context.Product.Id),
+                            				new JProperty("apiId", context.Api.Id),
+                            				new JProperty("productId", context.Product.Id),
 							new JProperty("model", responseBody["model"].ToString()),
 							new JProperty("modeltime", context.Response.Headers.GetValueOrDefault("Openai-Processing-Ms",string.Empty)),
 							new JProperty("completion_tokens", responseBody["usage"]["completion_tokens"].ToString()),
@@ -108,13 +108,13 @@
 					
 					case "embeddings_create":
 						result = new JObject(
-                            new JProperty("event-type", "Response"),
+                            				new JProperty("event-type", "Response"),
 							new JProperty("event-time", DateTime.UtcNow.ToString()),
 							new JProperty("backend", context.Request.Url.Host.ToString()),
 							new JProperty("message-id", context.Variables["message-id"]),
 							new JProperty("operation", operation),
-                            new JProperty("apiId", context.Api.Id),
-                            new JProperty("productId", context.Product.Id),
+                            				new JProperty("apiId", context.Api.Id),
+                            				new JProperty("productId", context.Product.Id),
 							new JProperty("model", responseBody["model"].ToString()),
 							new JProperty("modeltime", context.Response.Headers.GetValueOrDefault("Openai-Processing-Ms",string.Empty)),
 							new JProperty("prompt_tokens", responseBody["usage"]["prompt_tokens"].ToString()),
@@ -122,15 +122,15 @@
 						).ToString();
 						break;
                     
-                    default:
-                        result = new JObject(
-                            new JProperty("event-type", "Response"),
+                    			default:
+                        			result = new JObject(
+                            				new JProperty("event-type", "Response"),
 							new JProperty("event-time", DateTime.UtcNow.ToString()),
 							new JProperty("backend", context.Request.Url.Host.ToString()),
 							new JProperty("message-id", context.Variables["message-id"]),
 							new JProperty("operation", operation),
-                            new JProperty("apiId", context.Api.Id),
-                            new JProperty("productId", context.Product.Id),
+                            				new JProperty("apiId", context.Api.Id),
+                            				new JProperty("productId", context.Product.Id),
 							new JProperty("modeltime", context.Response.Headers.GetValueOrDefault("Openai-Processing-Ms",string.Empty))
 						).ToString();
 						break;

@@ -145,10 +145,5 @@ You can also test that messages are being received from the Azure Event Hub usin
 
 After you have verified requests and responses are being captured by the Azure Event Hub, you can capture those events in a number of ways. The integration with Azure Stream Analytics provides a number of simple ways to extract, transform, and load events from an Azure Event Hub to a data store for further analytics. 
 
-[Review the documentation](https://learn.microsoft.com/en-us/azure/event-hubs/process-data-azure-stream-analytics) and select the option that works best for your organization. An example of streaming the events to an Azure PowerBI Dataset is documented at this link https://journeyofthegeek.com/2023/05/18/granular-chargebacks-in-azure-openai-service/.
-
-## Resources
-- Azure AD, APIM, and Azure OpenAI Service: https://journeyofthegeek.com/2023/04/27/apim-and-azure-openai-service-azure-ad/
-- Chargebacks in Azure OpenAI Service: https://journeyofthegeek.com/2023/05/18/granular-chargebacks-in-azure-openai-service/
-- Azure API Management Policies for Azure OpenAI: https://github.com/mattfeltonma/azure-openai-apim
+[Review the documentation](https://learn.microsoft.com/en-us/azure/event-hubs/process-data-azure-stream-analytics) and select the option that works best for your organization.
 

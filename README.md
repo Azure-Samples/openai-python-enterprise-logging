@@ -195,6 +195,7 @@ ApiManagementGatewayLogs
 
 ## Resources
 - Azure API Management Policies for Azure OpenAI: https://github.com/mattfeltonma/azure-openai-apim
+- Advanced Retry Policies: https://github.com/ian-t-adams/azure-openai-api-m-retry/
 
 ## Frequently Asked Questions
 - Where is the "Deploy to Azure" button?

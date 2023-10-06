@@ -24,8 +24,8 @@ provider "azurerm" {
 }
 
 locals {
-  name = "openai${random_string.unique.result}"
-  location  = var.location
+  name     = "openai${random_string.unique.result}"
+  location = var.location
 
   tags = {
     "managed_by" = "terraform"

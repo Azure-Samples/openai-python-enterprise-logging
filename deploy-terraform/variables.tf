@@ -1,14 +1,14 @@
 variable "location" {
-  type = string
+  type    = string
   default = "eastus"
 }
 
 variable "model" {
-  type = string
+  type    = string
   default = "gpt-35-turbo"
 }
 
 variable "model_version" {
-  type = string
+  type    = string
   default = "0301"
 }

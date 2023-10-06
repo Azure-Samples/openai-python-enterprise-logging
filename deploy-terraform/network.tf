@@ -145,6 +145,6 @@ resource "azurerm_public_ip" "api" {
   location            = azurerm_resource_group.rg.location
   allocation_method   = "Static"
   domain_name_label   = "apim${local.name}"
-  tags = local.tags
+  tags                = local.tags
 }
 

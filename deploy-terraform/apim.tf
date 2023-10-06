@@ -11,27 +11,27 @@ resource "azurerm_api_management" "apim" {
   policy = [
     {
       xml_content = <<-EOT
-    <policies>
-      <inbound>
+<policies>
+    <inbound>
         <cors allow-credentials="true">
-          <allowed-origins>
-            <origin>https://apim-${local.name}.developer.azure-api.net</origin>
-          </allowed-origins>
-          <allowed-methods preflight-result-max-age="300">
-          	<method>*</method>
-          </allowed-methods>
-          <allowed-headers>
-          	<header>*</header>
-          </allowed-headers>
-          <expose-headers>
-          	<header>*</header>
-          </expose-headers>
+            <allowed-origins>
+                <origin>https://apim-${local.name}.developer.azure-api.net</origin>
+            </allowed-origins>
+            <allowed-methods preflight-result-max-age="300">
+                <method>*</method>
+            </allowed-methods>
+            <allowed-headers>
+                <header>*</header>
+            </allowed-headers>
+            <expose-headers>
+                <header>*</header>
+            </expose-headers>
         </cors>
-      </inbound>
-      <backend>
-        <forward-request />
-      </backend>
-      <outbound>
+    </inbound>
+    <backend>
+        <forward-request buffer-response="false" />
+    </backend>
+    <outbound>
         <set-header name="X-OperationName" exists-action="override">
             <value>@( context.Operation.Name )</value>
         </set-header>
@@ -47,8 +47,8 @@ resource "azurerm_api_management" "apim" {
         <set-header name="X-ApiPath" exists-action="override">
             <value>@( context.Api.Path )</value>
         </set-header>
-      </outbound>
-      <on-error>
+    </outbound>
+    <on-error>
         <set-header name="X-OperationName" exists-action="override">
             <value>@( context.Operation.Name )</value>
         </set-header>
@@ -67,15 +67,20 @@ resource "azurerm_api_management" "apim" {
         <set-header name="X-LastErrorMessage" exists-action="override">
             <value>@( context.LastError.Message )</value>
         </set-header>
-      </on-error>
-    </policies>
+    </on-error>
+</policies>
 EOT
       xml_link    = null
     },
   ]
   zones    = []
   sku_name = "Developer_1"
-  tags     = local.tags
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.tags
 }
 
 resource "azurerm_api_management_api" "this" {
@@ -104,9 +109,10 @@ resource "azurerm_api_management_backend" "this" {
   api_management_name = azurerm_api_management.apim.name
   protocol            = "http"
   url                 = "${azurerm_cognitive_account.this.endpoint}/openai"
+
   credentials {
     header = {
-      api-key = azurerm_cognitive_account.this.primary_access_key
+      api-key = "{{openaikey}}"
     }
   }
 }
@@ -153,7 +159,7 @@ resource "azurerm_api_management_api_policy" "this" {
             ).ToString();
             
         }</log-to-eventhub>
-        <set-backend-service backend-id="${azurerm_api_management_backend.this.name}" />
+        <set-backend-service backend-id="openaitz4a0hvb-backend" />
     </inbound>
     <backend>
         <base />
@@ -161,16 +167,19 @@ resource "azurerm_api_management_api_policy" "this" {
     <outbound>
         <base />
         <log-to-eventhub logger-id="ehlogger" partition-id="1">@{
-            var body = context.Response.Body?.As<string>(true);
-            if (body != null && body.Length > 1024)
-            {
-                body = body.Substring(0, 1024);
-            }
 
+            var body = "";
             var headers = context.Response.Headers
                                             .Select(h => string.Format("{0}: {1}", h.Key, String.Join(", ", h.Value)))
                                             .ToArray<string>();
 
+            var respContentType = context.Response.Headers.GetValueOrDefault("Content-Type", "");
+            if( respContentType.Equals("text/event-stream") ){
+                body = "streaming";
+            }else{
+                body = "not-streaming";
+                
+            }
             var requestIdHeader = context.Request.Headers.GetValueOrDefault("Request-Id", "");
             var requestBody = context.Request.Body?.As<string>(true);
             return new JObject(
@@ -226,10 +235,21 @@ resource "azurerm_api_management_logger" "this" {
   name                = "ehlogger"
   api_management_name = azurerm_api_management.apim.name
   resource_group_name = azurerm_resource_group.rg.name
-  
+
 
   eventhub {
     name              = azurerm_eventhub.this.name
     connection_string = azurerm_eventhub_namespace.this.default_primary_connection_string
+  }
+}
+
+resource "azurerm_api_management_named_value" "openaikey" {
+  name                = "openaikey"
+  resource_group_name = azurerm_resource_group.rg.name
+  api_management_name = azurerm_api_management.apim.name
+  display_name        = "openaikey"
+  secret              = true
+  value_from_key_vault {
+    secret_id = azurerm_key_vault_secret.openaikey.id
   }
 }

@@ -194,6 +194,7 @@ resource "azurerm_api_management_api_policy" "this" {
                 new JProperty("ResponseStatusCode", context.Response.StatusCode),
                 new JProperty("ResponseStatusReason", context.Response.StatusReason),
                 new JProperty("ResponseBody", body),
+                new JProperty("ResponseBodyPayload", context.Response.Body?.As<string>(true)),
                 new JProperty("OperationName", context.Operation.Name),
                 new JProperty("OperationMethod", context.Operation.Method),
                 new JProperty("OperationUrl", context.Operation.UrlTemplate),

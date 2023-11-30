@@ -3,7 +3,7 @@ resource "azurerm_api_management" "apim" {
   location             = azurerm_resource_group.rg.location
   resource_group_name  = azurerm_resource_group.rg.name
   publisher_name       = "openai-python-enterprise-logging"
-  publisher_email      = "something@nothing.com"
+  publisher_email      = "nothing@example.com"
   virtual_network_type = "External"
   virtual_network_configuration {
     subnet_id = azurerm_subnet.api.id
@@ -159,7 +159,7 @@ resource "azurerm_api_management_api_policy" "this" {
             ).ToString();
             
         }</log-to-eventhub>
-        <set-backend-service backend-id="openaitz4a0hvb-backend" />
+        <set-backend-service backend-id="${local.name}-backend" />
     </inbound>
     <backend>
         <base />
